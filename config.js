@@ -1,0 +1,98 @@
+// Helper: convert CSS hex color string to Phaser hex number
+function hexColor(cssColor) {
+    if (typeof cssColor === 'string' && cssColor.startsWith('#')) {
+        return parseInt(cssColor.substring(1), 16);
+    }
+    return cssColor;
+}
+
+var CONFIG = {
+    // Quotes are LOAD-BEARING. Phaser passes this straight into a canvas font
+    // string, and a family with a space and a digit in it fails to parse
+    // unquoted — silently, falling back to the system default with no error.
+    FONT_FAMILY: '"Baloo 2", sans-serif',
+    FONT_WEIGHT: '600',     // the ONE weight shipped in fonts/. Every label asks
+                            // for this rather than 'bold', because 'bold' means
+                            // 700 — which is not in the file, so the browser
+                            // SYNTHESISES it by smearing the 600 sideways. Ship
+                            // an 800 file and set this to '800' for more weight.
+    TEXT_COLOR: '#1A237E',
+
+    // The canvas's clear colour. Keep it the same as the page background in
+    // index.html so the letterbox bars cannot be told apart from the game.
+    BACKGROUND_COLOR: '#20232b',
+
+    DEBUG_LAYOUT: false,     // log the canvas size once at startup: [buffer]
+    DEBUG_STAGE: false,      // [stage] logs: the frame size and stage chosen at
+                             // boot, each reshape noticed, what holds a relayout
+                             // back, and the stage it picks
+
+    // ── The stage ─────────────────────────────────────────────────────────────
+    // LANDSCAPE ONLY.
+    STAGE: {
+        // ONLY THE WIDTH IS FIXED. Height is taken from the window's own aspect,
+        // so the stage matches the screen and there are no bars to begin with —
+        // a fixed 16:9 stage letterboxes on nearly every real screen.
+        //
+        // The clamps stop a freak window from producing an absurd stage — a very
+        // wide-and-short desktop window, or a phone held upright. Beyond them you
+        // get bars again, which is the correct outcome.
+        W: 1920, H: 1080, MIN_RATIO: 0.45, MAX_RATIO: 0.80,
+        // false pins the stage to the H above, ignoring the window's shape.
+        DERIVE_HEIGHT: true,
+        // FIT      letterboxes: the whole game always visible, bars on a
+        //          mismatched aspect, nothing ever cut off.
+        // ENVELOP  fills the window and crops the overflow.
+        MODE: 'FIT',
+        // A RESHAPE — a frame whose shape would give a stage height more than
+        // this share away from the current one — re-lays the game out in place
+        // once the size has held still for RESHAPE_DEBOUNCE_MS (see _relayout in
+        // game.js). Under it (a phone's toolbar sliding), FIT just scales.
+        // -1 turns reshapes off.
+        RESHAPE_TOLERANCE:   0.05,
+        RESHAPE_DEBOUNCE_MS: 250,
+        // While a relayout waits for whatever is mid-animation to land, time runs
+        // this many times faster, so the wait is a few frames rather than a second
+        // or two of the old layout on the new screen. 1 waits at normal speed.
+        RELAYOUT_FAST_FORWARD: 25,
+    },
+
+    // [timing] lines in the console: how long each stage before play took, and
+    // the slowest downloads. For finding where the loading time goes; turn off
+    // before release.
+    DEBUG_LOAD_TIMING: false,
+
+    // ── SAVING ──────────────────────────────────────────────────────────────
+    // The run is kept in the browser (localStorage) so a refresh does not lose
+    // it. Written every EVERY_MS and when the page is hidden or closed.
+    //   LOAD false  — ignore any save at boot (always start fresh), still write
+    //   ENABLED false — no saving or loading at all
+    //   Add ?newgame to the page's address to wipe the save and start over.
+    SAVE: {
+        ENABLED:  false,   // OFF FOR NOW: every load starts fresh, nothing is saved
+        LOAD:     true,
+        KEY:      'digitalCleanup.save',
+        EVERY_MS: 2000,
+    },
+
+    LOADING: {
+        // The backstop that lifts the loading screen anyway, so a stalled
+        // download cannot lock the player out. ms
+        SCREEN_TIMEOUT_MS: 20000,
+    },
+
+    // The stand-in rewarded ad shown on localhost, where the Poki SDK is absent.
+    AD: {
+        DURATION: 15,  // Duration of mock ad in seconds (countdown timer)
+        OVERLAY_COLOR: "#000000",
+        OVERLAY_ALPHA: 1.0,  // Fully opaque - blocks game view completely
+        TIMER_TEXT_SIZE: '120px',
+        TIMER_TEXT_COLOR: '#FFFFFF',
+        // ABOVE THE COUNTDOWN — a bare number said "waiting" without saying
+        // what for.
+        REWARD_TEXT:       'Reward in progress',
+        REWARD_TEXT_SIZE:  '40px',
+        REWARD_TEXT_COLOR: '#FFFFFF',
+        REWARD_TEXT_GAP:   20,   // clearance above the countdown number, px
+    },
+};
